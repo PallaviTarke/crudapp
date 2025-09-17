@@ -1,0 +1,316 @@
+version: "3.8"
+
+services:
+  backend:
+    image: pallavitarke04/backend-crudapp:latest
+    environment:
+      - MONGO_URI=mongodb://cruduser:crudpass@mongo1:27017,mongo2:27017,mongo3:27017/crudapp?replicaSet=rs0
+      - REDIS_NODES=redis-node-1:6379,redis-node-2:6379,redis-node-3:6379,redis-node-4:6379,redis-node-5:6379,redis-node-6:6379
+      - REDIS_PASSWORD=pass123
+      - PORT=4000
+    depends_on:
+      - mongo-init
+      - mongo1
+      - mongo2
+      - mongo3
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+      - redis-node-6
+      - redis-cluster-init
+    networks:
+      - mongo-cluster
+      - redis-cluster
+    ports:
+      - "4000:4000"
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+  backend-worker:
+    image: pallavitarke04/backend-crudapp:latest
+    command: ["node", "worker.js"]
+    environment:
+      - MONGO_URI=mongodb://cruduser:crudpass@mongo1:27017,mongo2:27017,mongo3:27017/crudapp?replicaSet=rs0
+      - REDIS_NODES=redis-node-1:6379,redis-node-2:6379,redis-node-3:6379,redis-node-4:6379,redis-node-5:6379,redis-node-6:6379
+      - REDIS_PASSWORD=pass123
+    depends_on:
+      - mongo-init
+      - backend
+      - redis-cluster-init
+    networks:
+      - mongo-cluster
+      - redis-cluster
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+
+  frontend:
+    image: pallavitarke04/frontend-crudapp:latest
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - default
+    ports:
+      - "3000:3000"
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+  redis-node-1:
+    image: redis:7.2
+    hostname: redis-node-1
+    command: [
+      "redis-server",
+      "--cluster-enabled", "yes",
+      "--appendonly", "yes",
+      "--cluster-config-file", "nodes.conf",
+      "--cluster-node-timeout", "5000",
+      "--requirepass", "pass123",
+      "--masterauth", "pass123",
+      "--cluster-announce-ip", "redis-node-1",
+      "--cluster-announce-port", "6379",
+      "--cluster-allow-reads-when-down yes",
+      "--cluster-announce-bus-port", "16379"
+    ]
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-1]
+      restart_policy:
+        condition: none
+
+  redis-node-2:
+    image: redis:7.2
+    hostname: redis-node-2
+    command: [
+      "redis-server",
+      "--cluster-enabled", "yes",
+      "--appendonly", "yes",
+      "--cluster-config-file", "nodes.conf",
+      "--cluster-node-timeout", "5000",
+      "--requirepass", "pass123",
+      "--masterauth", "pass123",
+      "--cluster-announce-ip", "redis-node-2",
+      "--cluster-announce-port", "6379",
+      "--cluster-allow-reads-when-down yes",
+      "--cluster-announce-bus-port", "16379"
+    ]
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-2]
+      restart_policy:
+        condition: none
+
+  redis-node-3:
+    image: redis:7.2
+    hostname: redis-node-3
+    command: [
+      "redis-server",
+      "--cluster-enabled", "yes",
+      "--appendonly", "yes",
+      "--cluster-config-file", "nodes.conf",
+      "--cluster-node-timeout", "5000",
+      "--requirepass", "pass123",
+      "--masterauth", "pass123",
+      "--cluster-announce-ip", "redis-node-3",
+      "--cluster-announce-port", "6379",
+      "--cluster-allow-reads-when-down yes",
+      "--cluster-announce-bus-port", "16379"
+    ]
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-3]
+      restart_policy:
+        condition: none
+
+  redis-node-4:
+    image: redis:7.2
+    hostname: redis-node-4
+    command: [
+      "redis-server",
+      "--cluster-enabled", "yes",
+      "--appendonly", "yes",
+      "--cluster-config-file", "nodes.conf",
+      "--cluster-node-timeout", "5000",
+      "--requirepass", "pass123",
+      "--masterauth", "pass123",
+      "--cluster-announce-ip", "redis-node-4",
+      "--cluster-announce-port", "6379",
+      "--cluster-allow-reads-when-down yes",
+      "--cluster-announce-bus-port", "16379"
+    ]
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-worker-1]
+      restart_policy:
+        condition: none
+
+  redis-node-5:
+    image: redis:7.2
+    hostname: redis-node-5
+    command: [
+      "redis-server",
+      "--cluster-enabled", "yes",
+      "--appendonly", "yes",
+      "--cluster-config-file", "nodes.conf",
+      "--cluster-node-timeout", "5000",
+      "--requirepass", "pass123",
+      "--masterauth", "pass123",
+      "--cluster-announce-ip", "redis-node-5",
+      "--cluster-announce-port", "6379",
+      "--cluster-allow-reads-when-down yes",
+      "--cluster-announce-bus-port", "16379"
+    ]
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-1]
+      restart_policy:
+        condition: none
+
+  redis-node-6:
+    image: redis:7.2
+    hostname: redis-node-6
+    command: [
+      "redis-server",
+      "--cluster-enabled", "yes",
+      "--appendonly", "yes",
+      "--cluster-config-file", "nodes.conf",
+      "--cluster-node-timeout", "5000",
+      "--requirepass", "pass123",
+      "--masterauth", "pass123",
+      "--cluster-announce-ip", "redis-node-6",
+      "--cluster-announce-port", "6379",
+      "--cluster-allow-reads-when-down yes",
+      "--cluster-announce-bus-port", "16379"
+    ]
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-2]
+      restart_policy:
+        condition: none
+
+  redis-cluster-init:
+    image: redis:7.2
+    environment:
+      - REDIS_PASSWORD=pass123
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+      - redis-node-5
+      - redis-node-6
+    entrypoint: ["/redis/init-redis.sh"]
+    volumes:
+      - ./redis/init-redis.sh:/redis/init-redis.sh
+    networks: [redis-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-1]
+      restart_policy:
+        condition: none
+
+  mongo1:
+    image: mongo:6
+    hostname: mongo1
+    volumes:
+      - mongo1-data:/data/db
+    secrets:
+      - mongo-keyfile
+    networks: [mongo-cluster]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cp /run/secrets/mongo-keyfile /etc/mongo-keyfile && \
+        chmod 400 /etc/mongo-keyfile && \
+        exec mongod --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-1]
+      restart_policy:
+        condition: none
+
+  mongo2:
+    image: mongo:6
+    hostname: mongo2
+    volumes:
+      - mongo2-data:/data/db
+    secrets:
+      - mongo-keyfile
+    networks: [mongo-cluster]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cp /run/secrets/mongo-keyfile /etc/mongo-keyfile && \
+        chmod 400 /etc/mongo-keyfile && \
+        exec mongod --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-2]
+      restart_policy:
+        condition: none
+
+  mongo3:
+    image: mongo:6
+    hostname: mongo3
+    volumes:
+      - mongo3-data:/data/db
+    secrets:
+      - mongo-keyfile
+    networks: [mongo-cluster]
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cp /run/secrets/mongo-keyfile /etc/mongo-keyfile && \
+        chmod 400 /etc/mongo-keyfile && \
+        exec mongod --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-3]
+      restart_policy:
+        condition: none
+
+  mongo-init:
+    image: mongo:6
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    entrypoint: ["/mongo/init-mongo.sh"]
+    volumes:
+      - ./mongo/init-mongo.sh:/mongo/init-mongo.sh
+    networks: [mongo-cluster]
+    deploy:
+      placement:
+        constraints: [node.hostname == ipfs-manager-1]
+      restart_policy:
+        condition: none
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
+
+secrets:
+  mongo-keyfile:
+    external: true
+
+networks:
+  redis-cluster:
+    driver: overlay
+  mongo-cluster:
+
